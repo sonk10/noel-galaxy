@@ -91,51 +91,45 @@
 </head>
 <body>
 
-  <!-- 🌟 Màn hình chờ -->
-  <div id="startScreen">❄️🎄 Click để bắt đầu Giáng Sinh 🎅✨</div>
+<!-- 🌟 Màn hình Noel -->
+<div id="mainScreen">
+  <!-- 🎵 Nhạc nền -->
+  <audio id="backgroundMusic" src="assets/Last Christmas.mp3" loop preload="auto"></audio>
 
-  <!-- 🌟 Màn hình Noel -->
-  <div id="mainScreen">
-    <!-- 🎵 Nhạc nền -->
-    <audio id="backgroundMusic" src="assets/Last Christmas.mp3" loop></audio>
+  <!-- 🌌 Bầu trời sao -->
+  <div class="stars" id="stars"></div>
+  <div class="shooting-star"></div>
 
-    <!-- 🌌 Bầu trời sao -->
-    <div class="stars" id="stars"></div>
-    <div class="shooting-star"></div>
+  <!-- ❄️ Canvas tuyết -->
+  <canvas id="snow"></canvas>
 
-    <!-- ❄️ Canvas tuyết -->
-    <canvas id="snow"></canvas>
+  <!-- 🎄 Canvas cây thông -->
+  <div id="tree-canvas"></div>
 
-    <!-- 🎄 Canvas cây thông -->
-    <div id="tree-canvas"></div>
-
-    <!-- 📦 Box chúc mừng -->
-    <div class="message-box">
-      <div class="marquee"><span>🎄✨ Chúc bạn Giáng Sinh an lành & hạnh phúc bên gia đình 🎅❄️</span></div>
-    </div>
+  <!-- 📦 Box chúc mừng -->
+  <div class="message-box">
+    <div class="marquee"><span>🎄✨ Chúc bạn Giáng Sinh an lành & hạnh phúc bên gia đình 🎅❄️</span></div>
   </div>
+</div>
 
-  <!-- ✅ Fix click phát nhạc ngay -->
-  <script>
-    document.getElementById("startScreen").addEventListener("click", () => {
-      document.getElementById("startScreen").style.display = "none";
-      document.getElementById("mainScreen").style.display = "block";
+<script>
+  const music = document.getElementById("backgroundMusic");
+  // Cho nhạc load trước (muted để ko nghe)
+  music.muted = true;
+  music.play().catch(() => {
+    console.log("Đợi click để mở nhạc");
+  });
 
-      const music = document.getElementById("backgroundMusic");
-      music.muted = false;
-      const playPromise = music.play();
+  // Khi click màn hình chờ
+  document.getElementById("startScreen").addEventListener("click", () => {
+    // Ẩn màn hình chờ, hiện Noel
+    document.getElementById("startScreen").style.display = "none";
+    document.getElementById("mainScreen").style.display = "block";
 
-      if (playPromise !== undefined) {
-        playPromise
-          .then(() => {
-            console.log("Phát nhạc thành công 🎵");
-          })
-          .catch(err => {
-            console.log("Không phát được nhạc ngay:", err);
-          });
-      }
-    });
-  </script>
+    // Mở nhạc ngay lập tức
+    music.muted = false;
+  });
+</script>
 
   <!-- 🌌 Nền sao + tuyết -->
   <script>
@@ -304,3 +298,4 @@
   </script>
 </body>
 </html>
+
