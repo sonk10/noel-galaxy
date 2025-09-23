@@ -115,17 +115,30 @@
     </div>
   </div>
 
+  <!-- ✅ Fix click phát nhạc ngay -->
   <script>
-    // Khi click màn hình chờ
     document.getElementById("startScreen").addEventListener("click", () => {
       document.getElementById("startScreen").style.display = "none";
       document.getElementById("mainScreen").style.display = "block";
 
       const music = document.getElementById("backgroundMusic");
-      music.play().catch(err => console.log("Không phát được nhạc:", err));
-    });
+      music.muted = false;
+      const playPromise = music.play();
 
-    /* 🌟 Nền sao */
+      if (playPromise !== undefined) {
+        playPromise
+          .then(() => {
+            console.log("Phát nhạc thành công 🎵");
+          })
+          .catch(err => {
+            console.log("Không phát được nhạc ngay:", err);
+          });
+      }
+    });
+  </script>
+
+  <!-- 🌌 Nền sao + tuyết -->
+  <script>
     const stars = document.getElementById("stars");
     for (let i = 0; i < 120; i++) {
       let star = document.createElement("div");
@@ -136,7 +149,6 @@
       stars.appendChild(star);
     }
 
-    /* ❄️ Tuyết rơi */
     const canvas = document.getElementById("snow");
     const ctx = canvas.getContext("2d");
     function resize() {
@@ -186,7 +198,6 @@
     renderer.setSize(window.innerWidth, window.innerHeight);
     container.appendChild(renderer.domElement);
 
-    // Ngôi sao cơ bản
     const starShape = new THREE.Shape();
     const outerRadius = 1, innerRadius = 0.5, spikes = 5;
     for (let i = 0; i < spikes * 2; i++) {
