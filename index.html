@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <title>Noel Galaxy + Cây thông 3D</title>
+  <style>
+    body {
+      margin: 0;
+      height: 100vh;
+      overflow: hidden;
+      font-family: 'Poppins', sans-serif;
+      background: radial-gradient(ellipse at bottom, #00111f 0%, #000010 100%);
+      color: white;
+    }
+
+    /* 🌟 Màn hình chờ */
+    #startScreen {
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      background: radial-gradient(circle at center, #000000, #0d1b2a);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      color: white;
+      font-size: 28px;
+      cursor: pointer;
+      z-index: 9999;
+    }
+
+    #mainScreen {
+      display: none;
+      width: 100%; height: 100%;
+      position: relative;
+      overflow: hidden;
+    }
+
+    /* 🌌 Nền sao */
+    .stars { position: fixed; top:0; left:0; width:100%; height:100%; z-index:-3; }
+    .star { position:absolute; width:2px; height:2px; background:white; border-radius:50%; opacity:0.8; animation:twinkle 2s infinite alternate; }
+    @keyframes twinkle { from{opacity:0.2;} to{opacity:1;} }
+
+    /* 🌠 Sao băng */
+    .shooting-star {
+      position: absolute; width: 150px; height: 2px;
+      background: linear-gradient(90deg, white, transparent);
+      top: -50px; left: -150px;
+      opacity: 0.8; transform: rotate(45deg);
+      animation: shooting 5s linear infinite;
+    }
+    @keyframes shooting {
+      0% { transform: translate(-200px, -200px) rotate(45deg); opacity: 0; }
+      10% { opacity: 1; }
+      50% { transform: translate(800px, 800px) rotate(45deg); opacity: 0; }
+      100% { opacity: 0; }
+    }
+
+    /* ❄️ Canvas tuyết */
+    #snow { position:fixed; top:0; left:0; width:100%; height:100%; z-index:-2; display:block; }
+
+    /* 🎄 Canvas cây thông */
+    #tree-canvas { position:fixed; top:0; left:0; width:100%; height:100%; z-index:0; }
+
+    /* 📦 Box chúc mừng */
+    .message-box {
+      position: absolute;
+      bottom: 50px; left: 50%; transform: translateX(-50%);
+      width: 500px; height: 70px;
+      background: rgba(0,20,40,0.6);
+      border-radius: 15px;
+      border: 2px solid #00aaff;
+      box-shadow: 0 0 20px rgba(0,150,255,0.8);
+      display: flex; align-items: center; justify-content: center;
+      overflow: hidden; z-index: 5;
+    }
+
+    /* ✨ Chữ chạy */
+    .marquee { white-space: nowrap; overflow: hidden; width: 100%; }
+    .marquee span {
+      display: inline-block; padding-left: 100%;
+      font-size: 20px; font-weight: bold;
+      text-shadow: 0 0 8px #66ccff, 0 0 16px #fff;
+      animation: marquee 12s linear infinite;
+    }
+    @keyframes marquee {
+      0% { transform: translateX(0); }
+      100% { transform: translateX(-100%); }
+    }
+  </style>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+</head>
+<body>
+
+  <!-- 🌟 Màn hình chờ -->
+  <div id="startScreen">❄️🎄 Click để bắt đầu Giáng Sinh 🎅✨</div>
+
+  <!-- 🌟 Màn hình Noel -->
+  <div id="mainScreen">
+    <!-- 🎵 Nhạc nền -->
+    <audio id="backgroundMusic" src="assets/Last Christmas.mp3" loop></audio>
+
+    <!-- 🌌 Bầu trời sao -->
+    <div class="stars" id="stars"></div>
+    <div class="shooting-star"></div>
+
+    <!-- ❄️ Canvas tuyết -->
+    <canvas id="snow"></canvas>
+
+    <!-- 🎄 Canvas cây thông -->
+    <div id="tree-canvas"></div>
+
+    <!-- 📦 Box chúc mừng -->
+    <div class="message-box">
+      <div class="marquee"><span>🎄✨ Chúc bạn Giáng Sinh an lành & hạnh phúc bên gia đình 🎅❄️</span></div>
+    </div>
+  </div>
+
+  <script>
+    // Khi click màn hình chờ
+    document.getElementById("startScreen").addEventListener("click", () => {
+      document.getElementById("startScreen").style.display = "none";
+      document.getElementById("mainScreen").style.display = "block";
+
+      const music = document.getElementById("backgroundMusic");
+      music.play().catch(err => console.log("Không phát được nhạc:", err));
+    });
+
+    /* 🌟 Nền sao */
+    const stars = document.getElementById("stars");
+    for (let i = 0; i < 120; i++) {
+      let star = document.createElement("div");
+      star.className = "star";
+      star.style.top = Math.random() * 100 + "vh";
+      star.style.left = Math.random() * 100 + "vw";
+      star.style.animationDuration = (Math.random() * 3 + 2) + "s";
+      stars.appendChild(star);
+    }
+
+    /* ❄️ Tuyết rơi */
+    const canvas = document.getElementById("snow");
+    const ctx = canvas.getContext("2d");
+    function resize() {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+    }
+    window.addEventListener("resize", resize);
+    resize();
+
+    const snowflakes = [];
+    const maxFlakes = 200;
+    for (let i = 0; i < maxFlakes; i++) {
+      snowflakes.push({
+        x: Math.random() * canvas.width,
+        y: Math.random() * canvas.height,
+        r: Math.random() * 2 + 1,
+        speedY: Math.random() * 2 + 1,
+        speedX: Math.random() * 0.6 - 0.3,
+        o: Math.random() * 0.5 + 0.5
+      });
+    }
+    function drawSnowflakes() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      for (let f of snowflakes) {
+        ctx.beginPath();
+        ctx.fillStyle = `rgba(255,255,255,${f.o})`;
+        ctx.arc(f.x, f.y, f.r, 0, Math.PI * 2);
+        ctx.fill();
+        f.y += f.speedY;
+        f.x += f.speedX;
+        if (f.y > canvas.height) {
+          f.y = -f.r;
+          f.x = Math.random() * canvas.width;
+        }
+      }
+    }
+    function loop() { drawSnowflakes(); requestAnimationFrame(loop); }
+    loop();
+  </script>
+
+  <!-- 🎄 Cây thông Noel 3D -->
+  <script>
+    const container = document.getElementById("tree-canvas");
+    const scene = new THREE.Scene();
+    const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+    const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    container.appendChild(renderer.domElement);
+
+    // Ngôi sao cơ bản
+    const starShape = new THREE.Shape();
+    const outerRadius = 1, innerRadius = 0.5, spikes = 5;
+    for (let i = 0; i < spikes * 2; i++) {
+      const angle = (i / (spikes * 2)) * Math.PI * 2;
+      const radius = i % 2 === 0 ? outerRadius : innerRadius;
+      const x = Math.cos(angle) * radius;
+      const y = Math.sin(angle) * radius;
+      if (i === 0) starShape.moveTo(x, y);
+      else starShape.lineTo(x, y);
+    }
+    starShape.closePath();
+    const extrudeSettings = { depth: 0.5, bevelEnabled: true, bevelThickness: 0.1, bevelSize: 0.1 };
+    const geometry = new THREE.ExtrudeGeometry(starShape, extrudeSettings);
+    const materialYellow = new THREE.MeshPhongMaterial({ color: 0xffff00, shininess: 100 });
+    const materialGreen = new THREE.MeshPhongMaterial({ color: 0x007700, shininess: 100 });
+
+    const treeGroup = new THREE.Group();
+
+    const layers = 15;
+    const topStar = new THREE.Mesh(geometry, materialYellow);
+    topStar.scale.set(3, 3, 3);
+    topStar.position.set(0, layers * 2 + 3, 0);
+    treeGroup.add(topStar);
+
+    const starsGroup = new THREE.Group();
+    const starsPerLayer = 40;
+    for (let layer = 0; layer < layers; layer++) {
+      const radius = 10 - layer * 0.6;
+      const y = layer * 2;
+      for (let i = 0; i < starsPerLayer; i++) {
+        const angle = (i / starsPerLayer) * Math.PI * 2;
+        const x = radius * Math.cos(angle);
+        const z = radius * Math.sin(angle);
+        const star = new THREE.Mesh(geometry, materialGreen.clone());
+        star.scale.set(0.6, 0.6, 0.6);
+        star.position.set(x, y, z);
+        starsGroup.add(star);
+      }
+    }
+    treeGroup.add(starsGroup);
+
+    const spiralStarsGroup = new THREE.Group();
+    const spiralStars = 1500;
+    for (let i = 0; i < spiralStars; i++) {
+      const progress = Math.random();
+      const angle = Math.random() * Math.PI * 2;
+      const radius = (1 - progress) * 8;
+      const y = progress * layers * 2;
+      const x = radius * Math.cos(angle);
+      const z = radius * Math.sin(angle);
+      const randomColor = Math.floor(Math.random() * 0xffffff);
+      const starMaterial = new THREE.MeshPhongMaterial({ color: randomColor });
+      const star = new THREE.Mesh(geometry, starMaterial);
+      star.scale.set(0.6, 0.6, 0.6);
+      star.position.set(x, y, z);
+      spiralStarsGroup.add(star);
+    }
+    treeGroup.add(spiralStarsGroup);
+
+    const sphereGeometry = new THREE.SphereGeometry(0.5, 16, 16);
+    const redMaterial = new THREE.MeshPhongMaterial({ color: 0xff0000 });
+    const silverMaterial = new THREE.MeshPhongMaterial({ color: 0xc0c0c0 });
+    const ornamentsGroup = new THREE.Group();
+    for (let i = 0; i < 200; i++) {
+      const randomLayer = Math.random() * layers;
+      const randomRadius = 10 - randomLayer * 0.6 + Math.random();
+      const randomAngle = Math.random() * Math.PI * 2;
+      const x = randomRadius * Math.cos(randomAngle);
+      const y = randomLayer * 2;
+      const z = randomRadius * Math.sin(randomAngle);
+      const ornamentMaterial = Math.random() > 0.5 ? redMaterial : silverMaterial;
+      const ornament = new THREE.Mesh(sphereGeometry, ornamentMaterial);
+      ornament.position.set(x, y, z);
+      ornamentsGroup.add(ornament);
+    }
+    treeGroup.add(ornamentsGroup);
+
+    treeGroup.position.y += 7;
+    scene.add(treeGroup);
+
+    const ambientLight = new THREE.AmbientLight(0x404040);
+    scene.add(ambientLight);
+    const pointLight = new THREE.PointLight(0xffffff, 1, 100);
+    pointLight.position.set(0, 30, 30);
+    scene.add(pointLight);
+
+    camera.position.set(0, layers, 40);
+
+    function animate() {
+      requestAnimationFrame(animate);
+      spiralStarsGroup.rotation.y += 0.02;
+      starsGroup.rotation.y += 0.01;
+      ornamentsGroup.rotation.y += 0.01;
+      topStar.rotation.y += 0.01;
+      renderer.render(scene, camera);
+    }
+    animate();
+
+    window.addEventListener('resize', () => {
+      camera.aspect = window.innerWidth / window.innerHeight;
+      camera.updateProjectionMatrix();
+      renderer.setSize(window.innerWidth, window.innerHeight);
+    });
+  </script>
+</body>
+</html>
