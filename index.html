@@ -91,48 +91,41 @@
 </head>
 <body>
 
-<!-- 🌟 Màn hình Noel -->
-<div id="mainScreen">
-  <!-- 🎵 Nhạc nền -->
-  <audio id="backgroundMusic" src="assets/Last Christmas.mp3" loop preload="auto"></audio>
+  <!-- 🌟 Màn hình chờ -->
+  <div id="startScreen">❄️🎄 Click để bắt đầu Giáng Sinh 🎅✨</div>
 
-  <!-- 🌌 Bầu trời sao -->
-  <div class="stars" id="stars"></div>
-  <div class="shooting-star"></div>
+  <!-- 🌟 Màn hình Noel -->
+  <div id="mainScreen">
+    <!-- 🎵 Nhạc nền -->
+    <audio id="backgroundMusic" src="assets/Last Christmas.mp3" loop></audio>
 
-  <!-- ❄️ Canvas tuyết -->
-  <canvas id="snow"></canvas>
+    <!-- 🌌 Bầu trời sao -->
+    <div class="stars" id="stars"></div>
+    <div class="shooting-star"></div>
 
-  <!-- 🎄 Canvas cây thông -->
-  <div id="tree-canvas"></div>
+    <!-- ❄️ Canvas tuyết -->
+    <canvas id="snow"></canvas>
 
-  <!-- 📦 Box chúc mừng -->
-  <div class="message-box">
-    <div class="marquee"><span>🎄✨ Chúc bạn Giáng Sinh an lành & hạnh phúc bên gia đình 🎅❄️</span></div>
+    <!-- 🎄 Canvas cây thông -->
+    <div id="tree-canvas"></div>
+
+    <!-- 📦 Box chúc mừng -->
+    <div class="message-box">
+      <div class="marquee"><span>🎄✨ Chúc bạn Giáng Sinh an lành & hạnh phúc bên gia đình 🎅❄️</span></div>
+    </div>
   </div>
-</div>
 
-<script>
-  const music = document.getElementById("backgroundMusic");
-  // Cho nhạc load trước (muted để ko nghe)
-  music.muted = true;
-  music.play().catch(() => {
-    console.log("Đợi click để mở nhạc");
-  });
-
-  // Khi click màn hình chờ
-  document.getElementById("startScreen").addEventListener("click", () => {
-    // Ẩn màn hình chờ, hiện Noel
-    document.getElementById("startScreen").style.display = "none";
-    document.getElementById("mainScreen").style.display = "block";
-
-    // Mở nhạc ngay lập tức
-    music.muted = false;
-  });
-</script>
-
-  <!-- 🌌 Nền sao + tuyết -->
   <script>
+    // Khi click màn hình chờ
+    document.getElementById("startScreen").addEventListener("click", () => {
+      document.getElementById("startScreen").style.display = "none";
+      document.getElementById("mainScreen").style.display = "block";
+
+      const music = document.getElementById("backgroundMusic");
+      music.play().catch(err => console.log("Không phát được nhạc:", err));
+    });
+
+    /* 🌟 Nền sao */
     const stars = document.getElementById("stars");
     for (let i = 0; i < 120; i++) {
       let star = document.createElement("div");
@@ -143,6 +136,7 @@
       stars.appendChild(star);
     }
 
+    /* ❄️ Tuyết rơi */
     const canvas = document.getElementById("snow");
     const ctx = canvas.getContext("2d");
     function resize() {
@@ -192,6 +186,7 @@
     renderer.setSize(window.innerWidth, window.innerHeight);
     container.appendChild(renderer.domElement);
 
+    // Ngôi sao cơ bản
     const starShape = new THREE.Shape();
     const outerRadius = 1, innerRadius = 0.5, spikes = 5;
     for (let i = 0; i < spikes * 2; i++) {
@@ -298,4 +293,3 @@
   </script>
 </body>
 </html>
-
